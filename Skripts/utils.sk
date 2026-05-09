@@ -1,0 +1,20 @@
+#
+# Sawit Server Util Script For Skript Plugin Minecraft
+# By nullptr03@skglab-dev
+#
+
+# =========================================
+# Function
+# =========================================
+
+function textMessage(msg: text):
+	loop all players:
+		send title colored "&e%{_msg}%" with subtitle "" to loop-player for 5 ticks, 40 ticks, 5 ticks
+
+function animatedText(titleText: text, subText: text):
+	loop all players:
+		send title colored "%{_titleText}%" with subtitle colored "%{_subText}%" to loop-player
+
+function warningMsg(subText: text):
+	loop all players:
+		send title colored "&c⚠ PERINGATAN ⚠" with subtitle colored "%{_subText}%" to loop-player

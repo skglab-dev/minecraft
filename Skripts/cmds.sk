@@ -1,0 +1,53 @@
+#
+# Sawit Server Command Script For Skript Plugin Minecraft
+# By nullptr03@skglab-dev
+#
+
+# =========================================
+# Commands
+# =========================================
+
+command /sawit <text>:
+	trigger:
+		textMessage("%arg-text%")
+
+command /broadcast <text>:
+	permission: broadcast.use
+	permission message: &cNo permission!
+	trigger:
+		broadcast "&6[Sawit Broadcast] &f%arg-text%"
+
+command /announce <text>:
+	trigger:
+		animatedText("&6⚡ ANNOUNCEMENT ⚡", "&f%arg-text%")
+
+command /settime <text>:
+	permission: time.set
+	trigger:
+
+		if arg-1 is "6AM":
+			set the time to 6:00 AM
+			broadcast "&eTime set to 6:00 AM"
+
+		else if arg-1 is "5AM":
+			set the time to 5:00 AM
+			broadcast "&eTime set to 5:00 AM"
+
+		else if arg-1 is "12AM":
+			set the time to 12:00 AM
+			broadcast "&eTime set to 12:00 AM"
+
+		else if arg-1 is "5PM":
+			set the time to 5:50 PM
+			broadcast "&eTime set to 5:50 PM"
+
+		else if arg-1 is "6PM":
+			set the time to 6:00 PM
+			broadcast "&eTime set to 6:00 PM"
+
+		else if arg-1 is "12PM":
+			set the time to 12:00 PM
+			broadcast "&eTime set to 12:00 PM"
+
+		else:
+			send "&cUsage: /settime <6AM|5AM|12AM|5PM|6PM|12PM>"

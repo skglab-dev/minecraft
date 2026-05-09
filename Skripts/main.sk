@@ -1,0 +1,36 @@
+#
+# Sawit Server Main Script For Skript Plugin Minecraft
+# By nullptr03@skglab-dev
+#
+
+# =========================================
+# Custom Join/Leave System
+# =========================================
+
+on join:
+	set join message to ""
+	
+	# Title Message
+	send title "&aSELAMAT DATANG" with subtitle "&f%player%" to player
+
+	# Chat Welcome
+	send ""
+	send "&2================================"
+	send "&2Halo &f%player%&a!"
+	send "&7Selamat datang di server Keluarga Besar Sawit."
+	#send "&eGunakan &f/help &euntuk bantuan."
+	send "&2================================"
+	send ""
+
+# =========================================
+# Warning Script
+# =========================================
+
+at 6:00 AM:
+	animatedText("&a☀ SELAMAT PAGI ☀", "&7Anda berhasil melewati malam yang menakutkan")
+
+at 6:00 PM:
+	warningMsg("&7Malam yang berbahaya akan segera tiba!")
+
+at 7:00 PM:
+	warningMsg("&7Malam yang berbahaya telah tiba, berhati-hati!")
