@@ -1,6 +1,7 @@
 function stopHorror():
 	if {horror.started} is true:
 		set {horror.started} to false
+		set {horror.seconds} to 0
 
 		loop all players:
 			remove darkness from loop-player
@@ -10,11 +11,21 @@ function stopHorror():
 			if off hand item of loop-player is torch:
 				clear off hand of loop-player
 
+function startTimer():
+	while {horror.seconds} > 0:
+		wait 1 second
+		subtract 1 from {horror.seconds}
+
+	if {horror.forceStop} is false:
+		broadcast "&aPlayers survived the horror!"
+	stopHorror()
+
 command /starthorror <number>:
 	permission: op
 	trigger:
 		set {horror.started} to true
-		set {_seconds} to arg-1 * 60
+		set {horror.seconds} to arg-1 * 60
+		set {horror.forceStop} to false
 
 		broadcast "&4Horror game started, survive for %arg-1% minutes!"
 
@@ -26,18 +37,14 @@ command /starthorror <number>:
 			set off hand item of loop-player to torch
 			send "&8Survive the darkness..." to loop-player
 
-		while {_seconds} > 0:
-			wait 1 second
-			subtract 1 from {_seconds}
-
-		broadcast "&aPlayers survived the horror!"
-		stopHorror()
+		startTimer()
 
 command /stophorror:
 	permission: op
 	trigger:
 		if {horror.started} is true:
-			stopHorror()
+			set {horror.seconds} to 0
+			set {horror.forceStop} to true
 			broadcast "&aHorror game ended!"
 
 every 10 seconds:
