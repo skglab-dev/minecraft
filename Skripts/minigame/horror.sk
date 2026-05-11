@@ -2,6 +2,9 @@ function stopHorror():
 	if {horror.started} is true:
 		set {horror.started} to false
 		set {horror.seconds} to 0
+		set {horror.teamLives} to 0
+		set {horror.allPlayers} to 0
+		set {horror.forceStop} to false
 
 		loop all players:
 			remove darkness from loop-player
@@ -16,58 +19,118 @@ function startTimer():
 		wait 1 second
 		subtract 1 from {horror.seconds}
 
+		# prevent player from removing darkness
+		loop all players:
+			if loop-player does not have darkness:
+				apply darkness 1 to loop-player for 999999 seconds
+			if loop-player does not have slowness:
+				apply slowness 1 to loop-player for 999999 seconds
+
+		if {horror.seconds} > 0:
+			if {horror.seconds} is 30:
+				broadcast "&6%{horror.seconds}% second left before horror minigame completed."
+			if {horror.seconds} is 15:
+				broadcast "&6%{horror.seconds}% second left before horror minigame completed."
+			if {horror.seconds} <= 3:
+				broadcast "&6Horror minigame end in %{horror.seconds}%..."
+		if {horror.teamLives} is 0:
+			broadcast "&4Horror Minigame ended, no player live left."
+			set {horror.seconds} to 0
+
 	if {horror.forceStop} is false:
-		broadcast "&aPlayers survived the horror!"
+		if {horror.allPlayers} is 0:
+			broadcast "&c%{horror.allPlayers}% Players survived the horror!"
+		if {horror.allPlayers} > 0:
+			broadcast "&a%{horror.allPlayers}% Players survived the horror!"
 	stopHorror()
 
 command /starthorror <number>:
 	permission: op
 	trigger:
-		set {horror.started} to true
-		set {horror.seconds} to arg-1 * 60
-		set {horror.forceStop} to false
+		if {horror.started} is true:
+			send "&4Horror minigame already started"
 
-		broadcast "&4Horror game started, survive for %arg-1% minutes!"
+		if {horror.started} is false:
+			set {horror.started} to true
+			set {horror.seconds} to arg-1 * 60
+			set {horror.forceStop} to false
+			set {horror.maxTeamLives} to 3
+			set {horror.teamLives} to {horror.maxTeamLives}
 
-		loop all players:
-			apply darkness 1 to loop-player for arg-1 * 60 seconds
-			apply slowness 1 to loop-player for arg-1 * 60 seconds
-			play sound "minecraft:ambient.cave" to loop-player
-			give 1 torch to loop-player
-			set off hand item of loop-player to torch
-			send "&8Survive the darkness..." to loop-player
+			loop all players:
+				add 1 to {horror.allPlayers}
+				give 1 torch to loop-player
+				set off hand item of loop-player to torch
+				apply darkness 1 to loop-player for 999999 seconds
+				apply slowness 1 to loop-player for 999999 seconds
+				play sound "minecraft:ambient.cave" to loop-player
 
-		startTimer()
+			broadcast "&aHorror game started, survive for %arg-1% minutes!"
+			broadcast "&6 Player Live: %{horror.teamLives}%"
+			broadcast "&6 Player Playing: %{horror.allPlayers}%"
+
+			startTimer()
 
 command /stophorror:
 	permission: op
 	trigger:
+		if {horror.started} is false:
+			send "&4Horror minigame is not started."
 		if {horror.started} is true:
 			set {horror.seconds} to 0
 			set {horror.forceStop} to true
 			broadcast "&aHorror game ended!"
 
+command /testhorror:
+	permission: op
+	trigger:
+		loop all players:
+			remove darkness from loop-player
+			remove slowness from loop-player
+
 every 10 seconds:
 	if {horror.started} is true:
 		loop all players:
-			chance of 30%:
-				play sound "entity.warden.heartbeat" to loop-player
 			chance of 10%:
 				apply blindness 1 to loop-player for 3 seconds
 				send "&8You feel watched..." to loop-player
-
-every 15 seconds:
-	if {horror.started} is true:
-		loop all players:
-			play sound "minecraft:ambient.cave" to loop-player
-
-			chance of 30%:
-				play sound "minecraft:entity.warden.heartbeat" to loop-player
-
 			chance of 15%:
 				play sound "minecraft:entity.ghast.scream" to loop-player
+			chance of 20%:
+				play sound "entity.warden.heartbeat" to loop-player
+			chance of 30%:
+				play sound "minecraft:ambient.cave" to loop-player
+
+# handle minigame on player join/quit
+on join:
+	if {horror.started} is true:
+		send "&aHorror minigame is currently running on this server"
+		add 1 to {horror.allPlayers}
+		give 1 torch to player
+		set off hand item of player to torch
+		apply darkness 1 to player for 999999 seconds
+		apply slowness 1 to player for 999999 seconds
+		send "&8Survive the darkness..." to player
+
+# have to remove because the effect will still exists after rejoining
+on quit:
+	if {horror.started} is true:
+		broadcast "&4A player left the minigame."
+		broadcast "&6 Player left: %{horror.allPlayers}%"
+		subtract 1 from {horror.allPlayers}
+		remove darkness from player
+		remove slowness from player
+		remove 1 torch from player
+		stop all sounds for player
+		if off hand item of player is torch:
+			clear off hand of player
 
 on death:
 	if {horror.started} is true:
 		if victim is a player:
+			subtract 1 from {horror.teamLives}
+			#if {horror.teamLives} is 0:
+			#	subtract 1 from {horror.allPlayers}
 			broadcast "&c%victim% died in the darkness!"
+			#broadcast "&6 Player left: %{horror.allPlayers}%"
+			broadcast "&6 Player lives: %{horror.teamLives}%"
